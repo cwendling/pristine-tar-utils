@@ -1,0 +1,23 @@
+#!/bin/sh
+
+set -e
+
+. "${0%/*}/pristine-tar-utils"
+
+orig=../$(ptu_get_orig_name debian/changelog ${PTU_COMPRESSION-xz})
+
+case "$1" in
+  generate|checkout)
+    ptu_generate_orig "$orig";;
+  extract)
+    ptu_extract_orig "$orig";;
+  clean)
+    ptu_clean_orig "$orig";;
+  *)
+    cat <<EOF >&2
+unknown option '$1'
+
+USAGE: $0 [generate|checkout|extract|clean]
+EOF
+    ;;
+esac

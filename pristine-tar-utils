@@ -1,0 +1,22 @@
+#!/bin/sh
+
+ptu_generate_orig() {
+	pristine-tar checkout "$1"
+}
+alias ptu_checkout=ptu_generate_orig
+
+ptu_extract_orig() {
+	tar --strip=1 -v -x -f "$1"
+}
+
+ptu_clean_orig() {
+	tar -t -f "$1" | sed '
+s%^[^/]*/%%
+/^$/d' | sort -r | xargs rm -rf
+}
+
+# Given a Debian changelog, gives the orig archive that matches
+# ptu_get_orig_name CHANGELOG [EXTENSION]
+ptu_get_orig_name() {
+	head -n1 "$1" | sed -r 's/(.*) \(([^-]+).*$/\1_\2.orig.tar.'"${2-xz}"'/'
+}

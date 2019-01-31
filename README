@@ -1,0 +1,13 @@
+Utilities for working with pristine-tar-enabled repositories
+
+pristine-tar-utils:
+	library providing common code for the various tools
+
+ptu:
+	tool for generating, extracting or cleaning a pristine-tar
+
+debuild-pristine-tar:
+	debuild(1) wrapper for building a pristine-tar-enabled
+	repository easily, taking care of extracting the tarball
+	and cleaning up afterwards.
+	It also generates a temporary version suffix for the build.

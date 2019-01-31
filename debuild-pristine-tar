@@ -1,0 +1,84 @@
+#!/bin/sh
+
+set -e
+set -x
+
+. "${0%/*}/pristine-tar-utils"
+
+die() {
+	echo "$@">&2
+	exit 1
+}
+
+check_repo() {
+	git status --porcelain | grep -q '^[?][?]' && return 1
+	if git status --porcelain | grep -q '^.[^ ]'; then
+		[ "$1" = "--interactive" ] || return 1
+		echo "Repository contains uncommitted changes, continue? [y/N]" 
+		read ANS
+		[ "$ANS" = y ] && return 0
+	fi
+	return 1
+}
+
+# Sed-compatible regex for matching the version line from debian/changelog.
+# Captures are:
+# 1: the part before a ~SOMETHING version suffix
+# 2: the optional ~SOMETHING version suffix
+# 3: the part after a ~SOMETHING versionsuffix
+VERSION_MATCH_RE='^\(.*[(][^~)]*\)\(~[^)]*\)\?\([)].*\)$'
+set_temp_version() {
+	# generate a 
+	version=$( (
+			date '+%Y%m%d%H%M%S'
+			git branch --list | sed -n 's/^[*] *//p' 2>/dev/null
+			git rev-parse --short @ 2>/dev/null
+		) | tr -d '[:blank:][:cntrl:]/-' )
+	sed '1s/'"$VERSION_MATCH_RE"'/\1~'"$version"'\3/' -i debian/changelog
+	echo "Updated Debian version to $(dpkg-parsechangelog -S Version)"
+}
+
+unset_temp_version() {
+	sed '1s/'"$VERSION_MATCH_RE"'/\1\3/' -i debian/changelog
+	echo "Updated Debian version to $(dpkg-parsechangelog -S Version)"
+}
+
+################################
+
+TAR_COMPRESSION=xz
+
+case "$1" in
+	'--gz') TAR_COMPRESSION=gz; shift;;
+	'--xz') TAR_COMPRESSION=xz; shift;;
+esac
+
+# generate the orig tarball
+[ -f debian/changelog ]
+orig=../$(ptu_get_orig_name debian/changelog "$TAR_COMPRESSION")
+echo "generating $orig..."
+generate=false
+if [ -f "$orig" ]; then
+	echo "$orig already exists, do you want to re-generate it nonetheless? [y/N]" 
+	read ANS
+	[ "$ANS" = y ] && generate=true
+else
+	generate=true
+fi
+$generate && ptu_generate_orig "$orig"
+
+# check the directory is clean
+check_repo --interactive || die "The Git repository is not clean of untracked files!"
+# set temporary version suffix (~...)
+set_temp_version
+# setup the source tree
+ptu_extract_orig "$orig"
+# build
+debuild "$@"
+# cleanup
+dh_auto_clean || :
+dh_clean || :
+ptu_clean_orig "$orig"
+# unset temporary version suffix (~...)
+unset_temp_version
+# check we didn't leave too much trash around
+check_repo || die "The build messed up the Git repository, take care!  You might wanna run 'git clean -fd'"
