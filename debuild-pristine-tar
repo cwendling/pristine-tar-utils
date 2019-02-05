@@ -18,7 +18,7 @@ check_repo() {
 		read ANS
 		[ "$ANS" = y ] && return 0
 	fi
-	return 1
+	return 0
 }
 
 # Sed-compatible regex for matching the version line from debian/changelog.
