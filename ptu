@@ -4,7 +4,7 @@ set -e
 
 . "${0%/*}/pristine-tar-utils"
 
-orig=../$(ptu_get_orig_name debian/changelog ${PTU_COMPRESSION-xz})
+orig=../$(ptu_get_orig_name debian/changelog)
 
 case "$1" in
   generate|checkout)
