@@ -1,5 +1,8 @@
 Utilities for working with pristine-tar-enabled repositories
 
+BEWARE! This tool was written by somebody unfamiliar with gbp(1), so
+there are likely better alternatives using gbp.
+
 pristine-tar-utils:
 	library providing common code for the various tools
 
