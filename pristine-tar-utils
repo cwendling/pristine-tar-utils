@@ -18,5 +18,10 @@ s%^[^/]*/%%
 # Given a Debian changelog, gives the orig archive that matches
 # ptu_get_orig_name CHANGELOG [EXTENSION]
 ptu_get_orig_name() {
-	pristine-tar list | grep -F "$(head -n1 "$1" | sed -r 's/(.*) \(([0-9]+:)?([^-]+).*$/\1_\3.orig.tar/')"
+	local version="$(head -n1 "$1" | sed -r 's/(.*) \(([0-9]+:)?([^-]+).*$/\1_\3.orig.tar/')"
+	pristine-tar list | grep -F "$version" || {
+		ret="$?"
+		echo "Cannot find pristine-tar data for $version" >&2
+		return "$ret"
+	}
 }
