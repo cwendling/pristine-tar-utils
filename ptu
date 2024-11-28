@@ -10,6 +10,10 @@ case "$1" in
   generate|checkout)
     ptu_generate_orig "$orig";;
   extract)
+    shift
+    if test "$1" = "-f" && ! test -e "$orig"; then
+      ptu_generate_orig "$orig"
+    fi
     ptu_extract_orig "$orig";;
   clean)
     ptu_clean_orig "$orig";;
