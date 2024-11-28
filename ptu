@@ -17,6 +17,8 @@ case "$1" in
     ptu_extract_orig "$orig";;
   clean)
     ptu_clean_orig "$orig";;
+  verify)
+    pristine-tar verify "$orig";;
   *)
     cat <<EOF >&2
 unknown option '$1'
