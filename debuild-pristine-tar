@@ -78,6 +78,14 @@ debuild "$@"
 dh_auto_clean || :
 dh_clean || :
 ptu_clean_orig "$orig"
+
+set +x
+echo "========================================================================"
+echo "Files matching the built version:"
+ls -1 ../*"_$(dpkg-parsechangelog -S Version)_"*.deb
+echo "========================================================================"
+set -x
+
 # unset temporary version suffix (~...)
 unset_temp_version
 # check we didn't leave too much trash around
